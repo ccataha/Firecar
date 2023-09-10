@@ -1,0 +1,47 @@
+{
+    "log": {
+      "loglevel": "{{LOG_LEVEL}}",
+      "access": "{{LOG_DIR}}/xray/access.log",
+      "error": "{{LOG_DIR}}/xray/error.log"
+    },
+    "inbounds": [
+      {
+        "port": {{ PORT }},
+        "protocol": "vless",
+        "settings": {
+          "clients": [
+            {{ USERS }}
+          ],
+          "decryption": "none"
+        },
+        "streamSettings": {
+          "network": "tcp",
+          "security": "reality",
+          "realitySettings": {
+            "show": false,
+            "dest": "{{ TARGET_HOST }}:{{ TARGET_PORT }}",
+            "xver": 0,
+            "serverNames": [
+              {{ TARGET_SNI }}
+            ],
+            "privateKey": "{{ PRIVATE_KEY }}",
+            "shortIds": [
+              ""
+            ]
+          }
+        },
+        "sniffing": {
+          "enabled": true,
+          "destOverride": [
+              "http",
+              "tls"
+          ]
+        }
+      }
+    ],
+    "outbounds": [
+      {
+        "protocol": "freedom"
+      }
+    ]
+  }
