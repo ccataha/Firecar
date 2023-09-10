@@ -3,7 +3,7 @@ version: '3'
 services:
 #1. https://github.com/tarampampam/3proxy-docker
   3proxy:
-    build: applications/3proxy/3proxy-docker/Dockerfile
+    build: ./applications/3proxy/3proxy-docker/
     container_name: 3proxy
     ports:
       - "30101:30101/tcp" #3128 DEFAULT
@@ -19,7 +19,7 @@ services:
       - SOCKS_PORT=30104 #1080 DEFAULT
 #2. https://github.com/quackerd/d2ray
   d2ray:
-    build: applications/d2ray/Dockerfile
+    build: ./applications/d2ray/
     container_name: d2ray
     ports:
       - 8443:8443
@@ -33,15 +33,13 @@ services:
       - PRIVATE_KEY=KE5MCI5e395fub55O1lsNPzvWw9nNAyCaecRSp3BvHg # Do NOT use this random key
       - LOG_LEVEL=warn
     restart: unless-stopped
-    networks:
-      - d2ray_br
     volumes:
       - ./config:/etc/d2ray
 
 #3. https://github.com/Gozargah/Marzban
-  Marzban:
-    build: applications/Marzban/Dockerfile
-    container_name: Marzban
+  marzban:
+    build: ./applications/Marzban
+    container_name: marzban
     restart: always
     network_mode: host
     ports:
@@ -55,7 +53,7 @@ services:
 
 #4. https://github.com/guolin/shadowsocks-docker
   shadowsocks:
-    build: applications/shadowsocks/Dockerfile
+    build: ./applications/shadowsocks/shadowsocks-docker
     container_name: SS_Vanilla
     environment:
       - SS_SERVER_ADDR=5.42.77.197

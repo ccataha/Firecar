@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+#1. https://github.com/timkolotov/3proxy-docker
+  3proxy:
+    build: ./applications/3proxy
+    container_name: 3proxy
+    restart: always
+    environment:
+      - HTTP_PORT=8080
+      - SOCKS_PORT=1080
+      - USER=Billy
+      - PASS=Yllib
+    volumes:
+       - ./applications/3proxy/passwd:/etc/3proxy/passwd:ro
+    ports:
+      - "1080:1080"
+      - "8080:8080"
+
