@@ -7,6 +7,6 @@ COPY ./3proxy.cfg.tpl /etc/3proxy.cfg.tpl
 COPY ./entrypoint.sh /opt/entrypoint.sh
 RUN chmod +x /opt/entrypoint.sh
 
-EXPOSE 8080 1080
+EXPOSE 10301 10302
 
 ENTRYPOINT ["/opt/entrypoint.sh"]
