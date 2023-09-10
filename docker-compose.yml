@@ -7,10 +7,10 @@ services:
     container_name: 3proxy
     restart: always
     environment:
-      - HTTP_PORT=8080
-      - SOCKS_PORT=1080
-      - USER=Billy
-      - PASS=Yllib
+      - HTTP_PORT=10301
+      - SOCKS_PORT=10302
+      - USER=chinastrong
+      - PASS=strong66uu77
     volumes:
        - ./applications/3proxy/passwd:/etc/3proxy/passwd:ro
     ports:
