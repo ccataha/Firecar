@@ -1,33 +1,15 @@
-ARG ARCH=
-ARG GOLANG_VERSION=1.20
-ARG ALPINE_VERSION=3.18
+FROM alpine:latest
 
-FROM ${ARCH}golang:${GOLANG_VERSION}-alpine${ALPINE_VERSION} as builder
+ENV WG_QUICK_URL https://git.zx2c4.com/WireGuard/plain/src/tools/wg-quick/linux.bash
 
-ARG wg_go_tag=0.0.20230223
-ARG wg_tools_tag=v1.0.20210914
+RUN apk add --no-cache bash wget openresolv
+RUN wget -O /bin/wg-quick $WG_QUICK_URL \
+    && chmod +x /bin/wg-quick
 
-RUN apk add --update git build-base libmnl-dev iptables
+COPY docker-entrypoint.sh /usr/bin/
 
-RUN git clone https://git.zx2c4.com/wireguard-go && \
-    cd wireguard-go && \
-    git checkout $wg_go_tag && \
-    make && \
-    make install
+VOLUME ["/etc/wireguard"]
+EXPOSE 38945/udp
 
-ENV WITH_WGQUICK=yes
-RUN git clone https://git.zx2c4.com/wireguard-tools && \
-    cd wireguard-tools && \
-    git checkout $wg_tools_tag && \
-    cd src && \
-    make && \
-    make install
-
-FROM ${ARCH}alpine:${ALPINE_VERSION}
-
-RUN apk add --no-cache --update bash libmnl iptables openresolv iproute2
-
-COPY --from=builder /usr/bin/wireguard-go /usr/bin/wg* /usr/bin/
-COPY entrypoint.sh /entrypoint.sh
-
-CMD ["/entrypoint.sh"]
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["wg-quick", "up", "wg0"]

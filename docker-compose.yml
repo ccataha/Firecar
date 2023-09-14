@@ -26,13 +26,9 @@ services:
     sysctls:
      - net.ipv4.ip_forward=1
     volumes:
-     - /dev/net/tun:/dev/net/tun
-     - ./applications/wireguard/wireguard-conf/:/etc/wireguard
-    environment:
-     - WG_COLOR_MODE=always
-     - LOG_LEVEL=info
+       - ./applications/wireguard/configs:/etc/wireguard
     ports:
-     - 10401:10401/udp #51820
+     - 10401:10401/udp
     # Uncomment the following line when 'AllowedIPs' is '0.0.0.0/0'
     # privileged: true
     restart: always
