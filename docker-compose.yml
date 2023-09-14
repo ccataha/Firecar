@@ -27,6 +27,8 @@ services:
      - net.ipv4.ip_forward=1
     volumes:
        - ./applications/wireguard/configs:/etc/wireguard
+    devices:
+       - "/dev/net/tun:/dev/net/tun"
     ports:
      - 10401:10401/udp
     # Uncomment the following line when 'AllowedIPs' is '0.0.0.0/0'
