@@ -17,30 +17,22 @@ services:
     ports:
       - "1080:1080"
       - "8080:8080"
-#2. https://github.com/linuxserver/docker-wireguard
+#2. https://github.com/felixfischer/wireguard-docker
   wireguard:
-    build: ./applications/wireguard
+    build: ./applications/wireguard/
     container_name: wireguard
     cap_add:
-      - NET_ADMIN
-      - SYS_MODULE #optional
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Etc/UTC
-      - SERVERURL=5.42.77.197
-      - SERVERPORT=10401
-      - PEERS=10 #Number of peers to create confs for. Required for server mode. Can also be a list of names: myPC,myPhone,myTablet (alphanumeric only)
-      - PEERDNS=auto #optional
-      - INTERNAL_SUBNET=10.13.13.0 #optional
-      - ALLOWEDIPS=0.0.0.0/0 #optional
-      - PERSISTENTKEEPALIVE_PEERS= #optional
-      - LOG_CONFS=true #optional
-    volumes:
-      - /path/to/appdata/config:/config
-      - /lib/modules:/lib/modules #optional
-    ports:
-      - 10401:10401/udp
+     - NET_ADMIN
     sysctls:
-      - net.ipv4.conf.all.src_valid_mark=1
-    restart: unless-stopped
+     - net.ipv4.ip_forward=1
+    volumes:
+     - /dev/net/tun:/dev/net/tun
+     - ./applications/wireguard/wireguard-conf/:/etc/wireguard
+    environment:
+     - WG_COLOR_MODE=always
+     - LOG_LEVEL=info
+    ports:
+     - 10401:10401/udp #51820
+    # Uncomment the following line when 'AllowedIPs' is '0.0.0.0/0'
+    # privileged: true
+    restart: always

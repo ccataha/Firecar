@@ -1,56 +1,33 @@
-# syntax=docker/dockerfile:1
+ARG ARCH=
+ARG GOLANG_VERSION=1.20
+ARG ALPINE_VERSION=3.18
 
-FROM ghcr.io/linuxserver/baseimage-alpine:3.18
+FROM ${ARCH}golang:${GOLANG_VERSION}-alpine${ALPINE_VERSION} as builder
 
-# set version label
-ARG BUILD_DATE
-ARG VERSION
-ARG WIREGUARD_RELEASE
-LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DATE}"
-LABEL maintainer="thespad"
+ARG wg_go_tag=0.0.20230223
+ARG wg_tools_tag=v1.0.20210914
 
-RUN \
-  echo "**** install dependencies ****" && \
-  apk add --no-cache --virtual=build-dependencies \
-    build-base \
-    elfutils-dev \
-    gcc \
-    git \
-    linux-headers && \
-  apk add --no-cache \
-    bc \
-    coredns \
-    gnupg \
-    grep \
-    iproute2 \
-    iptables \
-    ip6tables \
-    iputils \
-    libcap-utils \
-    libqrencode \
-    net-tools \
-    openresolv \
-    perl && \
-  echo "wireguard" >> /etc/modules && \
-  echo "**** install wireguard-tools ****" && \
-  if [ -z ${WIREGUARD_RELEASE+x} ]; then \
-    WIREGUARD_RELEASE=$(curl -sX GET "https://api.github.com/repos/WireGuard/wireguard-tools/tags" \
-    | jq -r .[0].name); \
-  fi && \
-  cd /app && \
-  git clone https://git.zx2c4.com/wireguard-tools && \
-  cd wireguard-tools && \
-  git checkout "${WIREGUARD_RELEASE}" && \
-  sed -i 's|\[\[ $proto == -4 \]\] && cmd sysctl -q net\.ipv4\.conf\.all\.src_valid_mark=1|[[ $proto == -4 ]] \&\& [[ $(sysctl -n net.ipv4.conf.all.src_valid_mark) != 1 ]] \&\& cmd sysctl -q net.ipv4.conf.all.src_valid_mark=1|' src/wg-quick/linux.bash && \
-  make -C src -j$(nproc) && \
-  make -C src install && \
-  echo "**** clean up ****" && \
-  apk del --no-network build-dependencies && \
-  rm -rf \
-    /tmp/*
+RUN apk add --update git build-base libmnl-dev iptables
 
-# add local files
-COPY /root /
+RUN git clone https://git.zx2c4.com/wireguard-go && \
+    cd wireguard-go && \
+    git checkout $wg_go_tag && \
+    make && \
+    make install
 
-# ports and volumes
-EXPOSE 51820/udp
+ENV WITH_WGQUICK=yes
+RUN git clone https://git.zx2c4.com/wireguard-tools && \
+    cd wireguard-tools && \
+    git checkout $wg_tools_tag && \
+    cd src && \
+    make && \
+    make install
+
+FROM ${ARCH}alpine:${ALPINE_VERSION}
+
+RUN apk add --no-cache --update bash libmnl iptables openresolv iproute2
+
+COPY --from=builder /usr/bin/wireguard-go /usr/bin/wg* /usr/bin/
+COPY entrypoint.sh /entrypoint.sh
+
+CMD ["/entrypoint.sh"]
